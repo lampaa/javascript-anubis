@@ -17,7 +17,7 @@ var encrypt = anubis.encrypt('Your text', true); // [, true] - convert to HEX
 /**
  * decode text
  */
-var dec = crypt.decrypt(encrypt, true); // [, true] - deconvert from HEX
+var dec = anubis.decrypt(encrypt, true); // [, true] - deconvert from HEX
 
 //
 console.log(dec);
