@@ -14,7 +14,7 @@
  *
  *
  * @author Alexander Zubakov <developer@xinit.ru>
- * @copyright © 2012 Alexander Zubakov
+ * @copyright В© 2012 Alexander Zubakov
  * @ported https://github.com/lampaa <2013>
  */
 
@@ -474,13 +474,6 @@
 	var KDF_algo = 'SHA256';
 
 	/**
-	 * When encrypt or decrypt file then it will be read by corresponding
-	 * methods using blocks of this size. Default is 0.5 MB.
-	 * @var int
-	 */
-	var file_blocksize = 524288;
-
-	/**
 	 * Shift $value to $r bits like $value >> $r.
 	 * This is messy hack for 32-bit signed integer values for x86 systems.
 	 */
@@ -609,21 +602,18 @@
 			//compute kappa ^ (r + ) from kappa ^ r:
 			for (i = 0; i < N; i++) {
 				inter[i] =
-				T0[rot(kappa[i], 24)] ^
-				T1[rot(kappa[(N + i - 1) % N], 16) & 0xff] ^
-				T2[rot(kappa[(N + i - 2) % N],  8) & 0xff] ^
-				T3[   (kappa[(N + i - 3) % N]    ) & 0xff];
+					T0[rot(kappa[i], 24)] ^
+					T1[rot(kappa[(N + i - 1) % N], 16) & 0xff] ^
+					T2[rot(kappa[(N + i - 2) % N],  8) & 0xff] ^
+					T3[   (kappa[(N + i - 3) % N]    ) & 0xff];
 			}
 			
-			
 			kappa[0] =
-			(T0[4 * r    ] & 0xff000000) ^
-			(T1[4 * r + 1] & 0x00ff0000) ^
-			(T2[4 * r + 2] & 0x0000ff00) ^
-			(T3[4 * r + 3] & 0x000000ff) ^
-			inter[0];
-			
-			
+				(T0[4 * r    ] & 0xff000000) ^
+				(T1[4 * r + 1] & 0x00ff0000) ^
+				(T2[4 * r + 2] & 0x0000ff00) ^
+				(T3[4 * r + 3] & 0x000000ff) ^
+				inter[0];
 			
 			for (i = 1; i < N; i++) {
 				kappa[i] = inter[i];
@@ -725,8 +715,8 @@
 	 */
 	var generateIV = function() {
 		//use KDF on time and random
-		return kdf(KDF_algo, microtime() +''+ mt_rand(), KDF_salt, 16);
-		//return kdf(KDF_algo, 0xffffff, KDF_salt, 16);
+		//return kdf(KDF_algo, microtime() +''+ mt_rand(), KDF_salt, 16);
+		return kdf(KDF_algo, 0xffffff, KDF_salt, 16);
 	}
 	
 	/**
@@ -894,16 +884,11 @@
 	
 	function hash_hmac(algo, data, key) {
 		var hash = CryptoJS.HmacSHA256(data, key);
-		hash = hash.toString(CryptoJS.enc.Hex);
-		
-		for(var w=0, xor=''; w < hash.length; w++) {
-			xor += String.fromCharCode(hash.charCodeAt(w) ^ 10);
-		}
-		
-		return xor;
+		return hash.toString(CryptoJS.enc.Hex);
 	}
 	
-	function substr (str, start, len) {		var i = 0,
+	function substr (str, start, len) {		
+		var i = 0,
 		allBMP = true,
 		es = 0,
 		el = 0,
@@ -912,83 +897,12 @@
 		str += '';
 		var end = str.length;
 		
-		// BEGIN REDUNDANT
-		this.php_js = this.php_js || {};
-		this.php_js.ini = this.php_js.ini || {};
-		// END REDUNDANT
-		switch ((this.php_js.ini['unicode.semantics'] && this.php_js.ini['unicode.semantics'].local_value.toLowerCase())) {
-			case 'on':
-			// Full-blown Unicode including non-Basic-Multilingual-Plane characters
-			// strlen()
-			for (i = 0; i < str.length; i++) {
-				if (/[\uD800-\uDBFF]/.test(str.charAt(i)) && /[\uDC00-\uDFFF]/.test(str.charAt(i + 1))) {
-					allBMP = false;
-					break;
-				}
-			}
-			
-			if (!allBMP) {
-				if (start < 0) {
-					for (i = end - 1, es = (start += end); i >= es; i--) {
-						if (/[\uDC00-\uDFFF]/.test(str.charAt(i)) && /[\uD800-\uDBFF]/.test(str.charAt(i - 1))) {
-							start--;
-							es--;
-						}
-					}
-				} else {
-					var surrogatePairs = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
-					while ((surrogatePairs.exec(str)) != null) {
-						var li = surrogatePairs.lastIndex;
-						if (li - 2 < start) {
-							start++;
-						} else {
-							break;
-						}
-					}
-				}
-				
-				if (start >= end || start < 0) {
-					return false;
-				}
-				if (len < 0) {
-					for (i = end - 1, el = (end += len); i >= el; i--) {
-						if (/[\uDC00-\uDFFF]/.test(str.charAt(i)) && /[\uD800-\uDBFF]/.test(str.charAt(i - 1))) {
-							end--;
-							el--;
-						}
-					}
-					if (start > end) {
-						return false;
-					}
-					return str.slice(start, end);
-				} else {
-					se = start + len;
-					for (i = start; i < se; i++) {
-						ret += str.charAt(i);
-						if (/[\uD800-\uDBFF]/.test(str.charAt(i)) && /[\uDC00-\uDFFF]/.test(str.charAt(i + 1))) {
-							se++; // Go one further, since one of the "characters" is part of a surrogate pair
-						}
-					}
-					return ret;
-				}
-				break;
-			}
-			// Fall-through
-			case 'off':
-			// assumes there are no non-BMP characters;
-			//    if there may be such characters, then it is best to turn it on (critical in true XHTML/XML)
-			default:
-			if (start < 0) {
-				start += end;
-			}
-			end = typeof len === 'undefined' ? end : (len < 0 ? len + end : len + start);
-			// PHP returns false if start does not fall within the string.
-			// PHP returns false if the calculated end comes before the calculated start.
-			// PHP returns an empty string if start and end are the same.
-			// Otherwise, PHP returns the portion of the string from start to end.
-			return start >= str.length || start < 0 || start > end ? !1 : str.slice(start, end);
+		if (start < 0) {
+			start += end;
 		}
-		return undefined; // Please Netbeans
+		
+		end = typeof len === 'undefined' ? end : (len < 0 ? len + end : len + start);
+		return start >= str.length || start < 0 || start > end ? !1 : str.slice(start, end);
 	}
 
 	function encodeToHex(str){
@@ -1049,8 +963,8 @@
 			var blocks = dataPrepare(data);
 			
  			//Initialisation Vector (IV)
-			var register = cypher = generateIV();
-			
+			var register = generateIV();
+			var cypher = register;
 			
 			for(var i=0; i < blocks.length; i++) {
 				for(var w=0, xor = ''; w < register.length && w < blocks[i].length; w++) {

@@ -5,18 +5,18 @@
 var anubis = new Anubis();
 
 /**
- * set key
- */
+* set key
+*/
 var key = anubis.setKey("secret_key"); // [, true] - fixed key size
 
 /**
- * set text
- */
+* set text
+*/
 var encrypt = anubis.encrypt('Your text', true); // [, true] - convert to HEX
 
 /**
- * decode text
- */
+* decode text
+*/
 var dec = anubis.decrypt(encrypt, true); // [, true] - deconvert from HEX
 
 //
