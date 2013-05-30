@@ -14,7 +14,7 @@
  *
  *
  * @author Alexander Zubakov <developer@xinit.ru>
- * @copyright В© 2012 Alexander Zubakov
+ * @copyright © 2012 Alexander Zubakov
  * @ported https://github.com/lampaa <2013>
  */
 
