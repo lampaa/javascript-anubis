@@ -1,4 +1,3 @@
-<?php
 /**
  * Implementation of "tweaked" version of Anubis block cipher. Cipher Block
  * Chaining (CBC) mode used to encrypt and decrypt data that are longer
