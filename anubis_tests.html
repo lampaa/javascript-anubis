@@ -1,0 +1,24 @@
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/hmac-sha256.js"></script>
+<script src='anubis.js'></script>
+
+<script>
+var anubis = new Anubis();
+
+/**
+ * set key
+ */
+var key = anubis.setKey("secret_key"); // [, true] - fixed key size
+
+/**
+ * set text
+ */
+var encrypt = anubis.encrypt('Your text', true); // [, true] - convert to HEX
+
+/**
+ * decode text
+ */
+var dec = crypt.decrypt(encrypt, true); // [, true] - deconvert from HEX
+
+//
+console.log(dec);
+</script>
