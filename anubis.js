@@ -689,7 +689,7 @@
 			//as last block is 16 bytes length we need to add one more block to
 			//make last byte of message always point to added bytes length
 			if (block_len == 16) {
-				blocks = [];
+				blocks.push('');
 				block_len = 0;
 				blocks_count++;
 			}
