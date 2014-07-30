@@ -13,8 +13,7 @@
  * Details: http://www.larc.usp.br/~pbarreto/AnubisPage.html
  *
  *
- * @author Alexander Zubakov <developer@xinit.ru>
- * @copyright © 2012 Alexander Zubakov
+ * https://code.google.com/p/anubis4cellbox/source/browse/trunk/src/ru/ivanovpv/anubis4cellbox/Anubis.java?r=2
  * @ported https://github.com/lampaa <2013>
  */
 
