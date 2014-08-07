@@ -17,6 +17,152 @@
  * @ported https://github.com/lampaa <2013>
  */
 
+/**
+*
+*  Base64 encode / decode
+*  http://www.webtoolkit.info/
+*
+**/
+var Base64 = {
+
+	// private property
+	_keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+
+	// public method for encoding
+	encode : function (input, fix) {
+		if(fix == undefined) fix = false;
+		
+	    var output = "";
+	    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+	    var i = 0;
+
+	    if(!fix) input = Base64._utf8_encode(input);
+
+	    while (i < input.length) {
+
+	        chr1 = input.charCodeAt(i++);
+	        chr2 = input.charCodeAt(i++);
+	        chr3 = input.charCodeAt(i++);
+
+	        enc1 = chr1 >> 2;
+	        enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+	        enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+	        enc4 = chr3 & 63;
+
+	        if (isNaN(chr2)) {
+	            enc3 = enc4 = 64;
+	        } else if (isNaN(chr3)) {
+	            enc4 = 64;
+	        }
+
+	        output = output +
+	        this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
+	        this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+
+	    }
+
+	    return output;
+	},
+
+	// public method for decoding
+	decode : function (input, fix) {
+		if(fix == undefined) fix = false;
+
+	    var output = "";
+	    var chr1, chr2, chr3;
+	    var enc1, enc2, enc3, enc4;
+	    var i = 0;
+
+	    input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+	    while (i < input.length) {
+
+	        enc1 = this._keyStr.indexOf(input.charAt(i++));
+	        enc2 = this._keyStr.indexOf(input.charAt(i++));
+	        enc3 = this._keyStr.indexOf(input.charAt(i++));
+	        enc4 = this._keyStr.indexOf(input.charAt(i++));
+
+	        chr1 = (enc1 << 2) | (enc2 >> 4);
+	        chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+	        chr3 = ((enc3 & 3) << 6) | enc4;
+
+	        output = output + String.fromCharCode(chr1);
+
+	        if (enc3 != 64) {
+	            output = output + String.fromCharCode(chr2);
+	        }
+	        if (enc4 != 64) {
+	            output = output + String.fromCharCode(chr3);
+	        }
+
+	    }
+
+	    if(!fix) output = Base64._utf8_decode(output);
+
+	    return output;
+
+	},
+
+	// private method for UTF-8 encoding
+	_utf8_encode : function (string) {
+	    string = string.replace(/\r\n/g,"\n");
+	    var utftext = "";
+
+	    for (var n = 0; n < string.length; n++) {
+
+	        var c = string.charCodeAt(n);
+
+	        if (c < 128) {
+	            utftext += String.fromCharCode(c);
+	        }
+	        else if((c > 127) && (c < 2048)) {
+	            utftext += String.fromCharCode((c >> 6) | 192);
+	            utftext += String.fromCharCode((c & 63) | 128);
+	        }
+	        else {
+	            utftext += String.fromCharCode((c >> 12) | 224);
+	            utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+	            utftext += String.fromCharCode((c & 63) | 128);
+	        }
+
+	    }
+
+	    return utftext;
+	},
+
+	// private method for UTF-8 decoding
+	_utf8_decode : function (utftext) {
+	    var string = "";
+	    var i = 0;
+	    var c = c1 = c2 = 0;
+
+	    while ( i < utftext.length ) {
+
+	        c = utftext.charCodeAt(i);
+
+	        if (c < 128) {
+	            string += String.fromCharCode(c);
+	            i++;
+	        }
+	        else if((c > 191) && (c < 224)) {
+	            c2 = utftext.charCodeAt(i+1);
+	            string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+	            i += 2;
+	        }
+	        else {
+	            c2 = utftext.charCodeAt(i+1);
+	            c3 = utftext.charCodeAt(i+2);
+	            string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+	            i += 3;
+	        }
+
+	    }
+
+	    return string;
+	}
+
+}
+
  function Anubis() {
 	/**
 	 * Initial vector
@@ -697,7 +843,7 @@
 			//last octet will tell how many octets added
 			if (block_len < 16) {
 				for (i = 0; i < 15 - block_len; i++) {
-					blocks[blocks_count - 1] += String.fromCharCode(mt_rand(0, 255)); 
+					blocks[blocks_count - 1] += String.fromCharCode(mt_rand(0, 255));
 				}
 				blocks[blocks_count - 1] += String.fromCharCode(i + 1);
 			}
@@ -715,7 +861,7 @@
 	var generateIV = function() {
 		//use KDF on time and random
 		//return kdf(KDF_algo, microtime() +''+ mt_rand(), KDF_salt, 16);
-		return kdf(KDF_algo, 0xffffff, KDF_salt, 16);
+		return kdf(KDF_algo, "6a28abc8be644423521a511c071b2a8e", KDF_salt, 16);
 	}
 	
 	/**
@@ -731,10 +877,9 @@
 		var DK = '';
 		
 		while (DK.length < dkLen) {
-			DK += hash_hmac(algo, DK +''+ P, S);
+			DK = DK + '' + hash_hmac(algo, DK + '' + P, S);
 		}
 		DK = DK.substr(0, dkLen);
-		
 		return DK;
 	}
 	
@@ -750,7 +895,7 @@
 		var state = [];
 		var inter = [];
 		var R = roundKey.length - 1; // number of rounds
-		
+
 		var i, r, pos, w;
 		
 		//map byte array block to cipher state (mu)
@@ -763,7 +908,7 @@
 				((ord(block[pos++]) & 0xff)      ) ^
 				roundKey[0][i];
 		}
-		
+
 		//R - 1 full rounds:
 		for (r = 1; r < R; r++) {
 			inter[0] =
@@ -772,7 +917,7 @@
 				T2[rot(state[2], 24)] ^
 				T3[rot(state[3], 24)] ^
 				roundKey[r][0];
-			
+
 			inter[1] =
 				T0[rot(state[0], 16) & 0xff] ^
 				T1[rot(state[1], 16) & 0xff] ^
@@ -827,16 +972,30 @@
 			(T2[state[2] & 0xff] & 0x0000ff00) ^
 			(T3[state[3] & 0xff] & 0x000000ff) ^
 			roundKey[R][3];
+
+		function fixedFromCharCode (codePt) {  
+			if (codePt > 0x00FF || codePt < 0x0) {
+				codePt = codePt % 0x100;
+				if(codePt < 0x0) {
+					codePt = codePt - 0xFF00;
+				}
+				return String.fromCharCode(codePt);
+			} else {
+				return String.fromCharCode(codePt);  
+			}
+		}
+
+		block = "";
 		
 		//map cipher state to byte array block (mu^{-1}):
 		for (i = 0, pos = 0; i < 4; i++) {
 			w = inter[i];
-			block[pos++] = String.fromCharCode(w >> 24);
-			block[pos++] = String.fromCharCode(w >> 16);
-			block[pos++] = String.fromCharCode(w >>  8);
-			block[pos++] = String.fromCharCode(w);
+			block += fixedFromCharCode(w >> 24);
+			block += fixedFromCharCode(w >> 16);
+			block += fixedFromCharCode(w >>  8);
+			block += fixedFromCharCode(w);
 		}
-		
+
 		return block;
 	}
 
@@ -883,7 +1042,15 @@
 	
 	function hash_hmac(algo, data, key) {
 		var hash = CryptoJS.HmacSHA256(data, key);
-		return hash.toString(CryptoJS.enc.Hex);
+			hash = hash.toString(CryptoJS.enc.Hex);
+
+		output = '';
+
+		for(i = 0; i < hash.length; i+=2) {
+			output += String.fromCharCode(parseInt(hash.substr(i, 2), 16));
+		}
+
+		return output;
 	}
 	
 	function substr (str, start, len) {		
@@ -905,29 +1072,23 @@
 	}
 
 	function encodeToHex(str){
-		var r="";
-		var e=str.length;
-		var c=0;
-		var h;
-		while(c<e){
-			h=str.charCodeAt(c++).toString(16);
-			while(h.length<3) h="0"+h;
-			r+=h;
+		var i, l, o = '', n;
+		str += '';
+
+		for (i = 0, l = str.length; i < l; i++) {
+			n = str.charCodeAt(i)
+				 .toString(16);
+			o += n.length < 2 ? '0' + n : n;
 		}
-		return r;
+
+		return o;
 	}
 	
 	
 	function decodeFromHex(str){
-		var r="";
-		var e=str.length;
-		var s;
-		while(e>0){
-			s=e-3;
-			r=String.fromCharCode("0x"+str.substring(s,e))+r;
-			e=s;
-		}
-		return r;
+		var bytes = [];
+		for(var i=0; i< str.length-1; i+=2) bytes.push(parseInt(str.substr(i, 2), 16));
+		return String.fromCharCode.apply(String, bytes);
 	}
 	
 	return {
@@ -958,8 +1119,9 @@
 		 * @param string $data The data string to be encrypted.
 		 * @return string Encrypted data as raw byte string.
 		 */
-		encrypt: function(data, hex) {
-			var blocks = dataPrepare(data);
+		encrypt: function(data, hex, b64) {
+			if(b64 != undefined && b64)  var blocks = dataPrepare(Base64.encode(data));
+			else var blocks = dataPrepare(data);
 			
  			//Initialisation Vector (IV)
 			var register = generateIV();
@@ -969,14 +1131,11 @@
 				for(var w=0, xor = ''; w < register.length && w < blocks[i].length; w++) {
 					xor += String.fromCharCode(register.charCodeAt(w) ^ blocks[i].charCodeAt(w));
 				}
-				
 				register = crypt(xor, roundKeyEnc);
 				cypher += register;
 			}
-			
-			if(hex != undefined) {
-				return encodeToHex(cypher);
-			}
+
+			if(hex != undefined && hex) return encodeToHex(cypher);
 			
 			return cypher;
 		},
@@ -987,20 +1146,19 @@
 		  * @param string $data The data string to be decrypted.
 		  * @return string Decrypted data.
 		  */
-		decrypt : function (data, hex) {
-			if(hex != undefined) {
-				data = decodeFromHex(data);
-			}
+		decrypt : function (data, hex, b64) {
+			if(hex != undefined && hex) data = decodeFromHex(data);
 			
 			var blocks = dataPrepare(data, false);
 			
 			//first block is Initialization Vector (IV)
 			var register = blocks.shift();
-			
+
 			var decrypted = '';
 			
 		
 			for(var i=0; i < blocks.length; i++) {
+
 				var crypted = crypt(blocks[i], roundKeyDec);
 				
 				for(var w=0, xor = ''; w < register.length && w < crypted.length; w++) {
@@ -1010,10 +1168,12 @@
 				decrypted += xor;
 				register = blocks[i];
 			}
-			
+
 			//as last octet represents count of added octets to match required
 			//message length, take it and cut message to initial length
 			decrypted = substr(decrypted, 0, -ord(substr(decrypted, -1, 1)));
+
+			if(b64 != undefined && b64) return Base64.decode(decrypted);
 			
 			return decrypted;
 		}

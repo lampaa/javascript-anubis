@@ -1,24 +1,46 @@
+<meta charset="utf-8">
 <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/hmac-sha256.js"></script>
 <script src='anubis.js'></script>
-
 <script>
 var anubis = new Anubis();
+
+/*
+*	Use Base64, when encode non-Latin characters
+*/
 
 /**
 * set key
 */
-var key = anubis.setKey("secret_key"); // [, true] - fixed key size
+anubis.setKey('secret_key');
+		// anubis.setKey(key[, size])
+		// key 	-	secret key
+		// size -	fixed key size, between true or false 
 
 /**
 * set text
 */
-var encrypt = anubis.encrypt('Your text', true); // [, true] - convert to HEX
+var enc = anubis.encrypt('Hellow world', false, false);
+		// anubis.encrypt(string[, hex[, base64]])
+		// string	-	the input string
+		// hex		-	output convert to HEX, between true or false
+		// base64	-	encrypt a string to Base64, between true or false
 
 /**
 * decode text
 */
-var dec = anubis.decrypt(encrypt, true); // [, true] - deconvert from HEX
+var dec = anubis.decrypt(enc, false, false);
+		// anubis.encrypt(string[, hex[, base64]])
+		// string	-	the input string
+		// hex		-	input deconvert from HEX, between true or false
+		// base64	-	decrypt a string from Base64, between true or false
 
 //
-console.log(dec);
+
+var anubis2 = new Anubis();
+anubis2.setKey('secret_key2');
+var dec = anubis2.decrypt(enc, false, true);
+
+
+console.log("Encript: " + enc);
+console.log("Decript: " + dec);
 </script>
