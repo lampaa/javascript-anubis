@@ -34,17 +34,7 @@ var dec = anubis.decrypt(enc, false, false);
 		// hex		-	input deconvert from HEX, between true or false
 		// base64	-	decrypt a string from Base64, between true or false
 
-//
-var anubis2 = new Anubis();
-
-anubis2.setKey('secret_key');
-var dec = anubis2.decrypt(enc, false, true);
-
-anubis2.setKey('secret_key2');
-var dec2 = anubis2.decrypt(enc, false, true);
-
 
 console.log("Encript: " + enc);
-console.log("true: Decript: " + dec);
-console.log("false: Decript: " + dec2);
+console.log("Decript: " + dec);
 </script>
