@@ -664,8 +664,7 @@ var Base64 = {
 			}
 		}
 		
-		key = kdf(KDF_algo, src_key, KDF_salt, length);
-		return key;
+		return kdf(KDF_algo, src_key, KDF_salt, length); // key
 	}
 
 	/**
@@ -684,7 +683,7 @@ var Base64 = {
 		//arrays of size $N
 		var kappa = [];
 		var inter = [];
-		var v, i, r, t;
+		var v, i, r, t, pos;
 		
 		//determine number of rounds from key size:
 		var R = 8 + N;
@@ -1000,7 +999,7 @@ var Base64 = {
 	}
 
 	function convert(input) {
-		var output = '';  
+		var output = '', i;  
 		
 		for (i=0; i < input.length; i++) {
 			output +=input[i].charCodeAt(0).toString(2);
@@ -1044,9 +1043,7 @@ var Base64 = {
 		var hash = CryptoJS.HmacSHA256(data, key);
 			hash = hash.toString(CryptoJS.enc.Hex);
 
-		output = '';
-
-		for(i = 0; i < hash.length; i+=2) {
+		for(var i = 0, output = ''; i < hash.length; i+=2) {
 			output += String.fromCharCode(parseInt(hash.substr(i, 2), 16));
 		}
 
